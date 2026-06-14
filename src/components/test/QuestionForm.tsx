@@ -134,11 +134,14 @@ export function QuestionForm({
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || `Upload failed with status ${res.status}`);
+      }
 
       const data = await res.json();
       if (data.success && data.url) {
-        const fullUrl = window.location.origin + data.url;
+        const fullUrl = data.url.startsWith("http") ? data.url : window.location.origin + data.url;
         methods.setValue("media_url", fullUrl);
         toast.success("Image uploaded successfully!", { id: toastId });
       } else {
