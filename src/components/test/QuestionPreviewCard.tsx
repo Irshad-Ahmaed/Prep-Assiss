@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatRichText } from "@/lib/utils";
 import type { Question } from "@/types";
 
 interface QuestionPreviewCardProps {
@@ -30,7 +30,10 @@ export function QuestionPreviewCard({ index, question }: QuestionPreviewCardProp
             </Badge>
           )}
         </div>
-        <p className="font-medium text-foreground">{question.question}</p>
+        <p 
+          className="font-medium text-foreground"
+          dangerouslySetInnerHTML={{ __html: formatRichText(question.question) }}
+        />
         {question.media_url && (
           <img
             src={question.media_url}
@@ -63,7 +66,7 @@ export function QuestionPreviewCard({ index, question }: QuestionPreviewCardProp
             <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Explanation
             </div>
-            <p>{question.explanation}</p>
+            <p dangerouslySetInnerHTML={{ __html: formatRichText(question.explanation) }} />
           </div>
         )}
       </CardContent>

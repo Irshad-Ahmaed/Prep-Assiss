@@ -6,6 +6,7 @@ import { Loader2, Plus, Download, ChevronsLeft, CheckCircle2, MinusCircle } from
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StepIndicator } from "@/components/layout/StepIndicator";
+import { Breadcrumbs } from "@/components/test/TestCreationTabs";
 import { TestPreviewSummary } from "@/components/test/TestPreviewSummary";
 import { QuestionForm } from "@/components/test/QuestionForm";
 import { QuestionListItem } from "@/components/test/QuestionListItem";
@@ -41,28 +42,14 @@ function QuestionsPage() {
     return <EmptyState title="Couldn't load test" description={error?.message} />;
   }
 
-  const addOrUpdate = (q: QuestionInput) => {
-    if (editingIdx !== null) {
-      setPending((prev) => prev.map((p, i) => (i === editingIdx ? q : p)));
-      setEditingIdx(null);
-    } else {
-      setPending((prev) => [...prev, q]);
-    }
-  };
-
-  const removeAt = (idx: number) => {
-    setPending((prev) => prev.filter((_, i) => i !== idx));
-    if (editingIdx === idx) setEditingIdx(null);
-  };
-
-  const saveAndContinue = async () => {
-    if (pending.length === 0) {
+  const saveQuestionsAndContinue = async (list: QuestionInput[]) => {
+    if (list.length === 0) {
       toast.error("Add at least one question");
       return;
     }
     setSubmitting(true);
     try {
-      const payload = pending.map((q) => ({ ...q, type: "mcq" as const, test_id: id, subject: test.subject }));
+      const payload = list.map((q) => ({ ...q, type: "mcq" as const, test_id: id, subject: test.subject }));
       const created = await questionsService.bulkCreate(payload);
       const questionIds = created.map((c) => c.id).filter((x): x is string => !!x);
 
@@ -82,6 +69,29 @@ function QuestionsPage() {
       setSubmitting(false);
     }
   };
+
+  const addOrUpdate = async (q: QuestionInput) => {
+    let nextPending: QuestionInput[];
+    if (editingIdx !== null) {
+      nextPending = pending.map((p, i) => (i === editingIdx ? q : p));
+      setEditingIdx(null);
+    } else {
+      nextPending = [...pending, q];
+    }
+    setPending(nextPending);
+
+    const targetLimit = test.total_questions || 50;
+    if (nextPending.length >= targetLimit) {
+      await saveQuestionsAndContinue(nextPending);
+    }
+  };
+
+  const removeAt = (idx: number) => {
+    setPending((prev) => prev.filter((_, i) => i !== idx));
+    if (editingIdx === idx) setEditingIdx(null);
+  };
+
+  const saveAndContinue = () => saveQuestionsAndContinue(pending);
 
   return (
     <div className="flex w-full items-start bg-white min-h-screen">
@@ -133,18 +143,20 @@ function QuestionsPage() {
             })}
           </div>
         </div>
-
       <div className="flex-1 w-full p-4 md:p-8 overflow-y-auto min-h-screen">
-        <PageHeader
-          title="Add questions"
-          description="Build the question bank for this test."
-          actions={
-            <Button onClick={saveAndContinue} disabled={submitting || pending.length === 0}>
-              {submitting && <Loader2 className="size-4 animate-spin" />}
-              Save & continue
-            </Button>
-          }
-        />
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Breadcrumbs
+            items={[
+              { label: "Test Creation", to: "/dashboard" },
+              { label: "Create Test" },
+              { label: "Chapter Wise" },
+            ]}
+          />
+          <Button onClick={saveAndContinue} disabled={submitting || pending.length === 0}>
+            {submitting && <Loader2 className="size-4 animate-spin" />}
+            Save & continue
+          </Button>
+        </div>
 
         <div className="mb-6">
           <TestPreviewSummary test={test} />

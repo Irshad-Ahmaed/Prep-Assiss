@@ -28,6 +28,8 @@ interface QuestionFormProps {
   onCancel?: () => void;
 }
 
+import { useRef } from "react";
+
 export function QuestionForm({
   defaultValues,
   submitLabel = "Add question",
@@ -37,6 +39,9 @@ export function QuestionForm({
   onCancel,
 }: QuestionFormProps) {
   const router = useRouter();
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const methods = useForm<QuestionInput>({
     resolver: zodResolver(questionSchema),
     defaultValues: { ...EMPTY, ...defaultValues },
@@ -51,6 +56,83 @@ export function QuestionForm({
     if (onCancel) onCancel();
     else router.history.back();
   };
+
+  const applyFormat = (formatType: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    let value = methods.getValues("question");
+    if (!value || value === "undefined") {
+      value = "";
+    }
+    const selectedText = start !== end ? value.substring(start, end) : "";
+
+    let replacement = "";
+    switch (formatType) {
+      case "bold":
+        replacement = `**${selectedText || "bold text"}**`;
+        break;
+      case "italic":
+        replacement = `*${selectedText || "italic text"}*`;
+        break;
+      case "underline":
+        replacement = `<u>${selectedText || "underlined text"}</u>`;
+        break;
+      case "link":
+        replacement = `[${selectedText || "link text"}](https://example.com)`;
+        break;
+      case "align-left":
+        replacement = `<div align="left">${selectedText || "aligned text"}</div>`;
+        break;
+      case "align-center":
+        replacement = `<div align="center">${selectedText || "aligned text"}</div>`;
+        break;
+      case "align-right":
+        replacement = `<div align="right">${selectedText || "aligned text"}</div>`;
+        break;
+      case "subscript":
+        replacement = `<sub>${selectedText || "subscript"}</sub>`;
+        break;
+      case "superscript":
+        replacement = `<sup>${selectedText || "superscript"}</sup>`;
+        break;
+      case "code":
+        replacement = `\`${selectedText || "code"}\``;
+        break;
+      default:
+        return;
+    }
+
+    const newValue = value.substring(0, start) + replacement + value.substring(end);
+    methods.setValue("question", newValue);
+
+    setTimeout(() => {
+      textarea.focus();
+      if (selectedText) {
+        textarea.setSelectionRange(start, start + replacement.length);
+      } else {
+        // Position cursor inside the tags if no text was selected
+        const offset = formatType === "bold" ? 2 : formatType === "italic" ? 1 : formatType === "underline" ? 3 : 1;
+        textarea.setSelectionRange(start + offset, start + offset + (replacement.length - offset * 2));
+      }
+    }, 0);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      methods.setValue("media_url", base64); // store full base64 in media_url
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const { ref: questionRef, ...questionRegister } = methods.register("question");
 
   return (
     <FormProvider {...methods}>
@@ -76,29 +158,64 @@ export function QuestionForm({
               <div className="flex h-12 items-center gap-1.5 border-b border-[#E5E7EB] bg-white px-5 py-[6px] rounded-t-lg overflow-x-auto shrink-0">
                 <div className="flex items-center gap-[7px]">
                   <div className="flex items-center gap-1 rounded bg-white px-1">
-                    <button type="button" className="p-1 hover:bg-gray-100 rounded text-[#6B7180]"><Italic className="size-[12px]" /></button>
-                    <button type="button" className="p-1 hover:bg-gray-100 rounded text-[#6B7180]"><Bold className="size-[12px]" /></button>
-                    <button type="button" className="p-1 hover:bg-gray-100 rounded text-[#6B7180]"><Underline className="size-[12px]" /></button>
-                    <button type="button" className="p-1 hover:bg-gray-100 rounded text-[#6B7180]"><Link className="size-[12px]" /></button>
+                    <button type="button" onClick={() => applyFormat("italic")} className="p-1 hover:bg-gray-100 rounded text-[#6B7180] cursor-pointer" title="Italic"><Italic className="size-[12px]" /></button>
+                    <button type="button" onClick={() => applyFormat("bold")} className="p-1 hover:bg-gray-100 rounded text-[#6B7180] cursor-pointer" title="Bold"><Bold className="size-[12px]" /></button>
+                    <button type="button" onClick={() => applyFormat("underline")} className="p-1 hover:bg-gray-100 rounded text-[#6B7180] cursor-pointer" title="Underline"><Underline className="size-[12px]" /></button>
+                    <button type="button" onClick={() => applyFormat("link")} className="p-1 hover:bg-gray-100 rounded text-[#6B7180] cursor-pointer" title="Link"><Link className="size-[12px]" /></button>
                   </div>
                   <div className="flex items-center gap-1 rounded bg-white px-1">
-                    <button type="button" className="p-1 hover:bg-gray-100 rounded text-[#6B7180]"><AlignLeft className="size-[12px]" /></button>
-                    <button type="button" className="p-1 hover:bg-gray-100 rounded text-[#6B7180]"><AlignCenter className="size-[12px]" /></button>
-                    <button type="button" className="p-1 hover:bg-gray-100 rounded text-[#6B7180]"><AlignRight className="size-[12px]" /></button>
+                    <button type="button" onClick={() => applyFormat("align-left")} className="p-1 hover:bg-gray-100 rounded text-[#6B7180] cursor-pointer" title="Align Left"><AlignLeft className="size-[12px]" /></button>
+                    <button type="button" onClick={() => applyFormat("align-center")} className="p-1 hover:bg-gray-100 rounded text-[#6B7180] cursor-pointer" title="Align Center"><AlignCenter className="size-[12px]" /></button>
+                    <button type="button" onClick={() => applyFormat("align-right")} className="p-1 hover:bg-gray-100 rounded text-[#6B7180] cursor-pointer" title="Align Right"><AlignRight className="size-[12px]" /></button>
                   </div>
                 </div>
                 <div className="flex items-center gap-[8px] bg-[#F8FAFF] px-2 py-1 rounded-lg h-[30px] ml-4">
-                  <button type="button" className="p-1 text-gray-700 hover:bg-gray-200 rounded"><Subscript className="size-4" /></button>
-                  <button type="button" className="p-1 text-gray-700 hover:bg-gray-200 rounded"><Superscript className="size-4" /></button>
-                  <button type="button" className="p-1 text-gray-700 hover:bg-gray-200 rounded"><ImageIcon className="size-4" /></button>
-                  <button type="button" className="p-1 text-gray-700 hover:bg-gray-200 rounded"><Code className="size-4" /></button>
+                  <button type="button" onClick={() => applyFormat("subscript")} className="p-1 text-gray-700 hover:bg-gray-200 rounded cursor-pointer" title="Subscript"><Subscript className="size-4" /></button>
+                  <button type="button" onClick={() => applyFormat("superscript")} className="p-1 text-gray-700 hover:bg-gray-200 rounded cursor-pointer" title="Superscript"><Superscript className="size-4" /></button>
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="p-1 text-gray-700 hover:bg-gray-200 rounded cursor-pointer" title="Insert Image"><ImageIcon className="size-4" /></button>
+                  <button type="button" onClick={() => applyFormat("code")} className="p-1 text-gray-700 hover:bg-gray-200 rounded cursor-pointer" title="Code"><Code className="size-4" /></button>
                 </div>
               </div>
-              <textarea
-                className="min-h-[176px] w-full resize-none bg-transparent p-[11px_20px] text-sm text-[#111827] placeholder-[#9CA3AF] outline-none rounded-b-lg"
-                placeholder="Type here"
-                {...methods.register("question")}
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
               />
+              <div className="relative w-full">
+                <textarea
+                  className="min-h-[176px] w-full resize-none bg-transparent p-[11px_20px] text-sm text-[#111827] placeholder-[#9CA3AF] outline-none rounded-b-lg"
+                  placeholder="Type here"
+                  {...questionRegister}
+                  ref={(e) => {
+                    questionRef(e);
+                    textareaRef.current = e;
+                  }}
+                />
+                {methods.watch("media_url") && (
+                  <div className="relative m-4 max-w-[200px] rounded-lg border border-[#E5E7EB] p-2 bg-gray-50">
+                    <img
+                      src={methods.watch("media_url")}
+                      alt="Uploaded preview"
+                      className="max-h-[120px] w-full object-contain rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        methods.setValue("media_url", "");
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = "";
+                        }
+                      }}
+                      className="absolute -top-2 -right-2 grid size-6 place-items-center rounded-full bg-red-500 text-white shadow hover:bg-red-600 cursor-pointer"
+                      title="Remove image"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

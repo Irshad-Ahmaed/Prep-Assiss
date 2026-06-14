@@ -2,6 +2,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatRichText } from "@/lib/utils";
 import type { QuestionInput } from "@/features/questions/questions.schema";
 
 interface QuestionListItemProps {
@@ -34,7 +35,10 @@ export function QuestionListItem({ index, question, onEdit, onDelete }: Question
               Correct: {OPTION_LABEL[question.correct_option]}
             </span>
           </div>
-          <p className="text-sm font-medium text-foreground line-clamp-2">{question.question}</p>
+          <p 
+            className="text-sm font-medium text-foreground line-clamp-2"
+            dangerouslySetInnerHTML={{ __html: formatRichText(question.question) }}
+          />
         </div>
         <div className="flex gap-1">
           {onEdit && (
