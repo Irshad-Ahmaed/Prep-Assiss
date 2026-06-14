@@ -1,9 +1,10 @@
 /**
  * Centralized environment configuration.
- * The API base URL can be overridden with VITE_API_BASE_URL; otherwise it
- * falls back to the staging backend provided in the assignment brief.
+ * The API base URL is always routed through the local proxy.
  */
 export const env = {
-  API_BASE_URL:
-    (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "/api/proxy",
+  /**
+   * The frontend ALWAYS calls the local proxy, ensuring the upstream URL is never exposed to the client.
+   */
+  API_BASE_URL: "/api/proxy",
 } as const;

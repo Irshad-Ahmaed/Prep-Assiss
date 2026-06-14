@@ -16,7 +16,8 @@ bun install
 bun run dev
 ```
 
-Optional env: create `.env.local` with `VITE_API_BASE_URL=…` to point at a backend.
+Optional env: create `.env` with `UPSTREAM_API_URL=…` to point the proxy to a different backend. 
+*(Note: I specifically use `UPSTREAM_API_URL` instead of a `VITE_` prefixed variable so the endpoint is never exposed to the client bundle).*
 
 ## Test credentials
 - User ID: `vedant-admin`

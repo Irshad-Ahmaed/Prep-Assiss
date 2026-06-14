@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const UPSTREAM = "https://admin-moderator-backend-staging.up.railway.app/api";
+const UPSTREAM = process.env.UPSTREAM_API_URL;
 
 async function forward({ request, params }: { request: Request; params: { _splat?: string } }) {
   const path = params._splat ?? "";
+  if (!UPSTREAM) {
+    throw new Error("UPSTREAM_API_URL is not defined in the environment.");
+  }
+
   const url = new URL(request.url);
   const target = `${UPSTREAM}/${path}${url.search}`;
 

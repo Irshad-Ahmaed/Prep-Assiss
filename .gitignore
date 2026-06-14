@@ -16,6 +16,9 @@ dist-ssr
 .nitro
 *.local
 
+.env
+knowledege.md
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
