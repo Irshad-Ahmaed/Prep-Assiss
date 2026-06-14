@@ -4,7 +4,12 @@ import type { Test } from "@/types";
 import type { TestFormInput } from "./tests.schema";
 
 export const testsService = {
-  list: () => unwrap<Test[]>(api.get(endpoints.tests.list)),
+  list: (limit?: number) => {
+    const params = new URLSearchParams();
+    if (limit) params.append("limit", limit.toString());
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return unwrap<Test[]>(api.get(`${endpoints.tests.list}${query}`));
+  },
   getById: (id: string) => unwrap<Test>(api.get(endpoints.tests.byId(id))),
   create: (payload: TestFormInput & { status?: "draft" | "live" | null }) =>
     unwrap<Test>(api.post(endpoints.tests.create, payload)),

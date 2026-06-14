@@ -24,19 +24,21 @@ export const Route = createFileRoute("/_authed/dashboard")({
 });
 
 function DashboardPage() {
-  const { data: tests, loading, error, refetch } = useTests();
+  const [showAll, setShowAll] = useState(false);
+  const { data: tests, loading, error, refetch } = useTests(showAll ? undefined : 10);
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return tests;
-    return tests.filter(
+    const baseTests = showAll ? tests : tests.slice(0, 10);
+    if (!q) return baseTests;
+    return baseTests.filter(
       (t) =>
         t.name?.toLowerCase().includes(q) ||
         t.subject?.toLowerCase().includes(q) ||
         t.status?.toString().toLowerCase().includes(q),
     );
-  }, [tests, query]);
+  }, [tests, query, showAll]);
 
   const handleDelete = async (test: Test) => {
     if (!confirm(`Are you sure you want to delete test "${test.name}"?`)) return;
@@ -98,7 +100,16 @@ function DashboardPage() {
           }
         />
       ) : (
-        <TestTable tests={filtered} onDelete={handleDelete} />
+        <div className="space-y-4">
+          <TestTable tests={filtered} onDelete={handleDelete} />
+          {!showAll && tests.length >= 10 && (
+            <div className="flex justify-center pt-2">
+              <Button variant="outline" onClick={() => setShowAll(true)} disabled={loading}>
+                {loading ? "Loading..." : "Show all documents"}
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </>
   );

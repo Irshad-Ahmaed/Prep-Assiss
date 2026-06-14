@@ -50,23 +50,28 @@ export function LoginForm() {
           placeholder="Enter User ID"
           autoComplete="username"
         />
-        <TextField<LoginInput>
-          name="password"
-          label="Password"
-          type="password"
-          placeholder="Enter Password"
-          autoComplete="current-password"
-        />
+        
+        <div className="space-y-3">
+          <TextField<LoginInput>
+            name="password"
+            label="Password"
+            type="password"
+            placeholder="Enter Password"
+            autoComplete="current-password"
+          />
 
-        <button
-          type="button"
-          className="text-sm font-medium text-primary hover:underline"
-          onClick={() => toast.info("Contact your admin to reset your password.")}
-        >
-          Forgot password?
-        </button>
+          <div className="flex justify-start">
+            <button
+              type="button"
+              className="text-[14px] font-medium text-[#5988EF] hover:underline"
+              onClick={() => toast.info("Contact your admin to reset your password.")}
+            >
+              Forgot password?
+            </button>
+          </div>
+        </div>
 
-        <Button type="submit" className="h-12 w-full text-base" disabled={submitting}>
+        <Button type="submit" className="h-[48px] w-full text-base rounded-[8px] bg-[#5988EF] hover:bg-[#5988EF]/90 text-white font-medium shadow-none" disabled={submitting}>
           {submitting && <Loader2 className="size-4 animate-spin" />}
           {submitting ? "Signing in…" : "Login"}
         </Button>

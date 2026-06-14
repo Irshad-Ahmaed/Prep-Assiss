@@ -26,32 +26,33 @@ function LoginPage() {
   }, [isAuthenticated, isHydrated, router]);
 
   return (
-    <div className="grid min-h-screen bg-background lg:grid-cols-2">
+    <div className="h-screen w-full overflow-hidden bg-white">
       {/* Left: illustration on light blue */}
-      <div className="hidden items-center justify-center bg-brand-blue-soft p-12 lg:flex">
-        <img src="/login.png" alt="Login Illustration" className="w-full max-w-xl h-auto object-contain drop-shadow-xl" />
-      </div>
+      <div className="hidden h-full w-full relative items-center bg-brand-blue-soft p-12 lg:flex">
+        <div className="h-full w-full max-w-xl flex items-center">
+          <img src="/login.png" alt="Login Illustration" className="max-h-full w-auto object-contain drop-shadow-xl" />
+        </div>
 
-      {/* Right: form card */}
-      <div className="flex items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm md:p-12">
-          <PreprouteLogo className="mb-10" />
-          <h1 className="text-2xl font-semibold text-foreground">Login</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Use your company provided Login credentials
-          </p>
+        {/* Right: form card */}
+        <div className="absolute w-[40%] right-5 top-1/2 -translate-y-1/2 flex h-[96vh] overflow-y-auto items-center justify-center p-6 rounded-sm border border-[#E5E7EB] bg-white md:p-10">
+          <div className="w-full p-8">
+            <PreprouteLogo className="mb-10" />
+            <h1 className="text-[24px] font-bold text-[#1F2937]">Login</h1>
+            <p className="mt-2 text-[14px] text-[#6B7180]">
+              Use your company provided Login credentials
+            </p>
 
-          <div className="mt-8">
-            <LoginForm />
+            <div className="mt-10">
+              <LoginForm />
+            </div>
+
+            {/* Hidden/Subtle test credentials */}
+            <div className="mt-12 opacity-50 hover:opacity-100 transition-opacity">
+              <p className="rounded-md bg-gray-50 p-3 text-xs text-gray-500 text-center">
+                <span className="font-semibold text-gray-700">Test credentials:</span> vedant-admin / vedant123
+              </p>
+            </div>
           </div>
-
-          <p className="mt-8 rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">Test credentials</span>
-            <br />
-            User ID: <code className="font-mono">vedant-admin</code>
-            <br />
-            Password: <code className="font-mono">vedant123</code>
-          </p>
         </div>
       </div>
     </div>
