@@ -28,6 +28,7 @@ interface QuestionFormProps {
   onCancel?: () => void;
 }
 
+import { toast } from "sonner";
 import { useRef } from "react";
 
 export function QuestionForm({
@@ -113,23 +114,46 @@ export function QuestionForm({
       if (selectedText) {
         textarea.setSelectionRange(start, start + replacement.length);
       } else {
-        // Position cursor inside the tags if no text was selected
         const offset = formatType === "bold" ? 2 : formatType === "italic" ? 1 : formatType === "underline" ? 3 : 1;
         textarea.setSelectionRange(start + offset, start + offset + (replacement.length - offset * 2));
       }
     }, 0);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      methods.setValue("media_url", base64); // store full base64 in media_url
-    };
-    reader.readAsDataURL(file);
+    const toastId = toast.loading("Uploading image to local server...");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        const fullUrl = window.location.origin + data.url;
+        methods.setValue("media_url", fullUrl);
+        toast.success("Image uploaded successfully!", { id: toastId });
+      } else {
+        throw new Error(data.error || "Invalid response status");
+      }
+    } catch (err: any) {
+      toast.error(`Local upload failed: ${err.message || err}. Using local preview.`, { id: toastId });
+      // Fallback: load as local base64 preview so it works in UI session at least
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        methods.setValue("media_url", base64);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const { ref: questionRef, ...questionRegister } = methods.register("question");

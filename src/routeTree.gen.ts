@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as AuthedTestTrackingRouteImport } from './routes/_authed.test-tracking'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed.dashboard'
 import { Route as ApiProxySplatRouteImport } from './routes/api/proxy/$'
@@ -32,6 +33,11 @@ const AuthedRoute = AuthedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUploadRoute = ApiUploadRouteImport.update({
+  id: '/api/upload',
+  path: '/api/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedTestTrackingRoute = AuthedTestTrackingRouteImport.update({
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRoute
   '/test-tracking': typeof AuthedTestTrackingRoute
+  '/api/upload': typeof ApiUploadRoute
   '/tests/new': typeof AuthedTestsNewRoute
   '/api/proxy/$': typeof ApiProxySplatRoute
   '/tests/$id/edit': typeof AuthedTestsIdEditRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRoute
   '/test-tracking': typeof AuthedTestTrackingRoute
+  '/api/upload': typeof ApiUploadRoute
   '/tests/new': typeof AuthedTestsNewRoute
   '/api/proxy/$': typeof ApiProxySplatRoute
   '/tests/$id/edit': typeof AuthedTestsIdEditRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authed/dashboard': typeof AuthedDashboardRoute
   '/_authed/test-tracking': typeof AuthedTestTrackingRoute
+  '/api/upload': typeof ApiUploadRoute
   '/_authed/tests/new': typeof AuthedTestsNewRoute
   '/api/proxy/$': typeof ApiProxySplatRoute
   '/_authed/tests/$id/edit': typeof AuthedTestsIdEditRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard'
     | '/test-tracking'
+    | '/api/upload'
     | '/tests/new'
     | '/api/proxy/$'
     | '/tests/$id/edit'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard'
     | '/test-tracking'
+    | '/api/upload'
     | '/tests/new'
     | '/api/proxy/$'
     | '/tests/$id/edit'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authed/dashboard'
     | '/_authed/test-tracking'
+    | '/api/upload'
     | '/_authed/tests/new'
     | '/api/proxy/$'
     | '/_authed/tests/$id/edit'
@@ -146,6 +158,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiUploadRoute: typeof ApiUploadRoute
   ApiProxySplatRoute: typeof ApiProxySplatRoute
 }
 
@@ -170,6 +183,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/upload': {
+      id: '/api/upload'
+      path: '/api/upload'
+      fullPath: '/api/upload'
+      preLoaderRoute: typeof ApiUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed/test-tracking': {
@@ -249,6 +269,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiUploadRoute: ApiUploadRoute,
   ApiProxySplatRoute: ApiProxySplatRoute,
 }
 export const routeTree = rootRouteImport
