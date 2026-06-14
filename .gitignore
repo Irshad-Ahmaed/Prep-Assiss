@@ -23,6 +23,11 @@ knowledege.md
 .wrangler/
 .dev.vars
 
+# Vercel build output
+.vercel/
+.vercel
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
