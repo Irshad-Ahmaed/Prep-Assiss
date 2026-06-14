@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { Loader2, Plus, Download, ChevronsLeft, CheckCircle2, MinusCircle } from "lucide-react";
 
@@ -18,12 +18,74 @@ import { useTest } from "@/features/tests/useTest";
 import { testsService } from "@/features/tests/tests.service";
 import { questionsService } from "@/features/questions/questions.service";
 import { ApiError } from "@/lib/api/types";
-import type { QuestionInput } from "@/features/questions/questions.schema";
+import { questionSchema, type QuestionInput } from "@/features/questions/questions.schema";
 
 export const Route = createFileRoute("/_authed/tests/$id/questions")({
   head: () => ({ meta: [{ title: "Add Questions — Preproute" }] }),
   component: QuestionsPage,
 });
+
+function parseCSV(text: string): Record<string, string>[] {
+  const lines: string[] = [];
+  let currentLine = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if ((char === '\r' || char === '\n') && !insideQuotes) {
+      if (currentLine.trim()) {
+        lines.push(currentLine);
+      }
+      currentLine = "";
+      if (char === '\r' && text[i + 1] === '\n') {
+        i++;
+      }
+      continue;
+    }
+    currentLine += char;
+  }
+  if (currentLine.trim()) {
+    lines.push(currentLine);
+  }
+
+  if (lines.length < 2) return [];
+
+  const headers = parseCSVLine(lines[0]);
+  const results: Record<string, string>[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    const obj: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      obj[header.trim()] = values[index]?.trim() ?? "";
+    });
+    results.push(obj);
+  }
+
+  return results;
+}
+
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === ',' && !insideQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  result.push(current);
+  return result;
+}
 
 void _EmptyState;
 
@@ -36,6 +98,7 @@ function QuestionsPage() {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const csvInputRef = useRef<HTMLInputElement | null>(null);
 
   if (loading) return <LoadingSpinner label="Loading test…" />;
   if (error || !test) {
@@ -68,6 +131,61 @@ function QuestionsPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const rows = parseCSV(text);
+        
+        if (rows.length === 0) {
+          toast.error("CSV file is empty or invalid");
+          return;
+        }
+
+        const newQuestions: QuestionInput[] = [];
+        for (let idx = 0; idx < rows.length; idx++) {
+          const row = rows[idx];
+          const q: QuestionInput = {
+            question: row.question ?? "",
+            option1: row.option1 ?? "",
+            option2: row.option2 ?? "",
+            option3: row.option3 ?? "",
+            option4: row.option4 ?? "",
+            correct_option: (row.correct_option ?? "option1") as any,
+            explanation: row.explanation ?? "",
+            difficulty: (row.difficulty ?? "medium") as any,
+            topic: row.topic ?? "",
+            sub_topic: row.sub_topic ?? "",
+            media_url: row.media_url ?? "",
+          };
+
+          const result = questionSchema.safeParse(q);
+          if (!result.success) {
+            toast.error(`Invalid question data in CSV (Row ${idx + 1}): ${result.error.errors[0].message}`);
+            return;
+          }
+          newQuestions.push(q);
+        }
+
+        const nextPending = [...pending, ...newQuestions];
+        setPending(nextPending);
+        toast.success(`Imported ${newQuestions.length} questions from CSV`);
+
+        const targetLimit = test.total_questions || 50;
+        if (nextPending.length >= targetLimit) {
+          await saveQuestionsAndContinue(nextPending);
+        }
+      } catch (err) {
+        toast.error("Failed to parse CSV file");
+      }
+    };
+    reader.readAsText(file);
   };
 
   const addOrUpdate = async (q: QuestionInput) => {
@@ -167,10 +285,25 @@ function QuestionsPage() {
             Question {pending.length + 1}<span className="text-[#93c5fd]">/{test.total_questions || 50}</span>
           </h2>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="gap-2 bg-white hover:bg-gray-50 text-gray-600 font-medium">
+            <input
+              type="file"
+              ref={csvInputRef}
+              className="hidden"
+              accept=".csv"
+              onChange={handleCsvUpload}
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => setEditingIdx(null)} 
+              className="gap-2 bg-white hover:bg-gray-50 text-gray-600 font-medium cursor-pointer"
+            >
               <Plus className="size-4" /> MCQ
             </Button>
-            <Button variant="outline" className="gap-2 bg-white hover:bg-gray-50 text-gray-600 font-medium">
+            <Button 
+              variant="outline" 
+              onClick={() => csvInputRef.current?.click()} 
+              className="gap-2 bg-white hover:bg-gray-50 text-gray-600 font-medium cursor-pointer"
+            >
               <Download className="size-4" /> CSV
             </Button>
           </div>
