@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Pencil, Eye, Trash2 } from "lucide-react";
+import { Pencil, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -14,7 +14,6 @@ import type { Test } from "@/types";
 
 interface TestTableProps {
   tests: Test[];
-  onDelete?: (test: Test) => void;
 }
 
 function formatDate(iso?: string) {
@@ -30,7 +29,7 @@ function formatDate(iso?: string) {
   }
 }
 
-export function TestTable({ tests, onDelete }: TestTableProps) {
+export function TestTable({ tests }: TestTableProps) {
   return (
     <div className="overflow-hidden rounded-lg border bg-card">
       <Table>
@@ -64,16 +63,7 @@ export function TestTable({ tests, onDelete }: TestTableProps) {
                       <Pencil className="size-4" />
                     </Link>
                   </Button>
-                  {onDelete && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Delete"
-                      onClick={() => onDelete(t)}
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
-                  )}
+
                 </div>
               </TableCell>
             </TableRow>

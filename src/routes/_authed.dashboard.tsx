@@ -40,16 +40,7 @@ function DashboardPage() {
     );
   }, [tests, query, showAll]);
 
-  const handleDelete = async (test: Test) => {
-    if (!confirm(`Are you sure you want to delete test "${test.name}"?`)) return;
-    try {
-      await testsService.delete(test.id);
-      toast.success("Test deleted successfully");
-      refetch();
-    } catch (e: any) {
-      toast.error(e.message || "Failed to delete test");
-    }
-  };
+
 
   return (
     <>
@@ -101,7 +92,7 @@ function DashboardPage() {
         />
       ) : (
         <div className="space-y-4">
-          <TestTable tests={filtered} onDelete={handleDelete} />
+          <TestTable tests={filtered} />
           {!showAll && tests.length >= 10 && (
             <div className="flex justify-center pt-2">
               <Button variant="outline" onClick={() => setShowAll(true)} disabled={loading}>

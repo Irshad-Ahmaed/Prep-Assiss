@@ -19,5 +19,4 @@ export const testsService = {
     unwrap<Test>(api.put(endpoints.tests.update(id), { status: "live", ...payload })),
   schedule: (id: string, payload: any) =>
     unwrap<Test>(api.put(endpoints.tests.update(id), { status: "scheduled", ...payload })),
-  delete: (id: string) => unwrap<void>(api.delete(endpoints.tests.byId(id))),
 };
