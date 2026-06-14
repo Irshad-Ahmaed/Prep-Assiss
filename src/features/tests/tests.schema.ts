@@ -5,7 +5,7 @@ export const testFormSchema = z.object({
   type: z.enum(["chapterwise", "pyq", "mock"]),
   subject: z.string().min(1, "Subject is required"),
   topics: z.array(z.string()).min(1, "Select at least one topic"),
-  sub_topics: z.array(z.string()),
+  sub_topics: z.array(z.string()).optional(),
   difficulty: z.enum(["easy", "medium", "hard"]),
   correct_marks: z.coerce.number().min(0).max(100),
   wrong_marks: z.coerce.number().min(-100).max(100),

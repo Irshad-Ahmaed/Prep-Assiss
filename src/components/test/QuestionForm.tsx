@@ -56,9 +56,9 @@ export function QuestionForm({
     <FormProvider {...methods}>
       <form
         onSubmit={methods.handleSubmit(handle)}
-        className="flex w-full flex-col items-center gap-[30px] rounded-lg bg-white pb-5"
+        className="flex w-full flex-col items-center gap-[30px] rounded-lg px-5 pb-5"
       >
-        <div className="flex w-full justify-end px-[10px] py-0 pt-2">
+        <div className="flex w-full justify-start px-[10px] py-0 pt-2">
           <button
             type="button"
             className="flex items-center gap-2 rounded-lg bg-[#FFFBFB] px-3 h-8 text-[#FF7F7F] transition-all hover:bg-red-50"
@@ -114,9 +114,8 @@ export function QuestionForm({
                 return (
                   <div key={optName} className="flex h-12 w-full items-center gap-[17px]">
                     <div
-                      className={`flex size-6 cursor-pointer items-center justify-center rounded-full border-2 ${
-                        isSelected ? "border-[#7489FF]" : "border-[#D1D5DB] hover:border-gray-400"
-                      }`}
+                      className={`flex size-6 cursor-pointer items-center justify-center rounded-full border-2 ${isSelected ? "border-[#7489FF]" : "border-[#D1D5DB] hover:border-gray-400"
+                        }`}
                       onClick={() => methods.setValue("correct_option", optName as any)}
                     >
                       {isSelected && <div className="size-3 rounded-full bg-[#7489FF]" />}
@@ -158,7 +157,7 @@ export function QuestionForm({
             <span className="text-base font-medium text-[#374151]">Question settings</span>
 
             <div className="flex flex-col gap-[20px]">
-              <div className="grid gap-[38px] lg:grid-cols-3">
+              <div className="flex flex-col gap-[38px] lg:grid-cols-3">
                 <div className="flex flex-col gap-[15px]">
                   <span className="text-base font-medium text-[#374151]">Level of Difficulty</span>
                   <div className="relative flex h-12 items-center rounded-lg border-[0.5px] border-[#9CA3AF] bg-white px-4">

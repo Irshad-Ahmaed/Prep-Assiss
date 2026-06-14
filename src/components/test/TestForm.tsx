@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -70,6 +70,56 @@ export function TestForm({
       methods.setValue("total_marks", total, { shouldValidate: false });
     }
   }, [numQuestions, correctMarks, methods]);
+
+  // Robustly set subject field in case backend returns an object or name instead of ID
+  const [initializedSubject, setInitializedSubject] = useState(false);
+  useEffect(() => {
+    if (subjects.length > 0 && defaultValues?.subject && !initializedSubject) {
+      const subj = defaultValues.subject as any;
+      const val = typeof subj === "object" ? subj.id || subj.name : subj;
+      const found = subjects.find((s) => s.id === val || s.name === val);
+      if (found && found.id !== methods.getValues("subject")) {
+        methods.setValue("subject", found.id, { shouldValidate: false, shouldDirty: false });
+      } else if (typeof val === "string" && val !== methods.getValues("subject")) {
+        methods.setValue("subject", val, { shouldValidate: false, shouldDirty: false });
+      }
+      setInitializedSubject(true);
+    }
+  }, [subjects, defaultValues?.subject, methods, initializedSubject]);
+
+  // Robustly map topics if backend returns names
+  const [initializedTopics, setInitializedTopics] = useState(false);
+  useEffect(() => {
+    if (topics.length > 0 && defaultValues?.topics?.length && !initializedTopics) {
+      const mapped = defaultValues.topics.map((t: any) => {
+        const val = typeof t === "object" ? t.id || t.name : t;
+        const found = topics.find((topic) => topic.id === val || topic.name === val);
+        return found ? found.id : val;
+      });
+      const current = methods.getValues("topics") || [];
+      if (JSON.stringify(mapped) !== JSON.stringify(current)) {
+        methods.setValue("topics", mapped, { shouldValidate: false, shouldDirty: false });
+      }
+      setInitializedTopics(true);
+    }
+  }, [topics, defaultValues?.topics, methods, initializedTopics]);
+
+  // Robustly map sub_topics if backend returns names
+  const [initializedSubTopics, setInitializedSubTopics] = useState(false);
+  useEffect(() => {
+    if (subTopics.length > 0 && defaultValues?.sub_topics?.length && !initializedSubTopics) {
+      const mapped = defaultValues.sub_topics.map((t: any) => {
+        const val = typeof t === "object" ? t.id || t.name : t;
+        const found = subTopics.find((sub) => sub.id === val || sub.name === val);
+        return found ? found.id : val;
+      });
+      const current = methods.getValues("sub_topics") || [];
+      if (JSON.stringify(mapped) !== JSON.stringify(current)) {
+        methods.setValue("sub_topics", mapped, { shouldValidate: false, shouldDirty: false });
+      }
+      setInitializedSubTopics(true);
+    }
+  }, [subTopics, defaultValues?.sub_topics, methods, initializedSubTopics]);
 
   return (
     <FormProvider {...methods}>

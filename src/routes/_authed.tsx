@@ -22,10 +22,10 @@ function AuthedLayout() {
     return <LoadingSpinner label="Loading…" className="min-h-screen" />;
   }
 
-  const isQuestionsPage = router.state.location.pathname.match(/\/tests\/[^/]+\/questions/);
+  const isQuestionsPage = router.state.location.pathname.match(/\/tests\/[^/]+\/(questions|preview)/);
 
   return (
-    <AppShell hideSidebar={!!isQuestionsPage}>
+    <AppShell collapseSidebar={!!isQuestionsPage}>
       <Outlet />
     </AppShell>
   );

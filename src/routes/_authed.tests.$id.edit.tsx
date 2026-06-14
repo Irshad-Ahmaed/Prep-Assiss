@@ -52,7 +52,11 @@ function EditTestPage() {
             onContinue={async (values) => {
               setSubmitting(true);
               try {
-                await testsService.update(id, values);
+                const payload = { ...values };
+                if (payload.sub_topics && payload.sub_topics.length === 0) {
+                  delete (payload as any).sub_topics;
+                }
+                await testsService.update(id, payload);
                 toast.success("Test updated");
                 close();
               } catch (e) {

@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { LoginIllustration } from "@/components/auth/LoginIllustration";
+
 import { PreprouteLogo } from "@/components/brand/PreprouteLogo";
 import { useAuth } from "@/features/auth/AuthProvider";
 
@@ -29,7 +29,7 @@ function LoginPage() {
     <div className="grid min-h-screen bg-background lg:grid-cols-2">
       {/* Left: illustration on light blue */}
       <div className="hidden items-center justify-center bg-brand-blue-soft p-12 lg:flex">
-        <LoginIllustration />
+        <img src="/login.png" alt="Login Illustration" className="w-full max-w-xl h-auto object-contain drop-shadow-xl" />
       </div>
 
       {/* Right: form card */}

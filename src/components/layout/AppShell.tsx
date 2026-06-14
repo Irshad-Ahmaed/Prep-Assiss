@@ -1,25 +1,35 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
 const SIDEBAR_WIDTH = "16rem";
 
-export function AppShell({ children, hideSidebar = false }: { children: ReactNode, hideSidebar?: boolean }) {
+export function AppShell({ children, collapseSidebar = false }: { children: ReactNode, collapseSidebar?: boolean }) {
+  const [isUserCollapsed, setIsUserCollapsed] = useState(() => {
+    return localStorage.getItem("sidebar_collapsed") === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("sidebar_collapsed", String(isUserCollapsed));
+  }, [isUserCollapsed]);
+
+  const effectiveCollapsed = collapseSidebar || isUserCollapsed;
+  const sidebarWidth = effectiveCollapsed ? "5rem" : SIDEBAR_WIDTH;
+  
   return (
     <div className="min-h-screen bg-background">
-      {/* Fixed sidebar — independent of content height */}
-      {!hideSidebar && <Sidebar widthRem={SIDEBAR_WIDTH} />}
+      {/* Fixed sidebar */}
+      <Sidebar widthRem={sidebarWidth} collapsed={effectiveCollapsed} onToggle={() => setIsUserCollapsed(!isUserCollapsed)} />
 
       {/* Main column offset by sidebar width on md+ */}
       <div
-        className="flex min-h-screen flex-col"
-        style={{ marginLeft: hideSidebar ? "0px" : `var(--app-sidebar-ml, 0px)` }}
+        className="flex min-h-screen flex-col transition-all duration-300"
+        style={{ marginLeft: `var(--app-sidebar-ml, 0px)` }}
       >
-        {!hideSidebar && (
-          <style>{`@media (min-width: 768px){:root{--app-sidebar-ml:${SIDEBAR_WIDTH};}}`}</style>
-        )}
-        <Topbar hideSidebarButton={hideSidebar} />
-        <main className={`flex-1 ${hideSidebar ? "" : "px-4 py-6 md:px-8 md:py-8"}`}>
+        <style>{`@media (min-width: 768px){:root{--app-sidebar-ml:${sidebarWidth};}}`}</style>
+        
+        <Topbar hideSidebarButton={effectiveCollapsed} />
+        <main className={`flex-1 ${collapseSidebar ? "" : "px-4 py-6 md:px-8 md:py-8"}`}>
           {children}
         </main>
       </div>

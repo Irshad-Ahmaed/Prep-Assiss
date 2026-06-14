@@ -24,7 +24,7 @@ export interface SubTopic {
   topic_id: string;
 }
 
-export type TestStatus = "draft" | "live" | null;
+export type TestStatus = "draft" | "live" | "scheduled" | null;
 export type Difficulty = "easy" | "medium" | "hard";
 export type TestType = "chapterwise" | "pyq" | "mock";
 
@@ -44,6 +44,9 @@ export interface Test {
   total_questions?: number;
   questions?: string[];
   status?: TestStatus;
+  start_time?: string;
+  end_time?: string;
+  live_until?: string;
   created_at?: string;
   updated_at?: string;
 }

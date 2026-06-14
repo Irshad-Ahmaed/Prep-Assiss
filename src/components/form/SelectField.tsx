@@ -44,7 +44,7 @@ export function SelectField<T extends FieldValues>({
             </FormLabel>
           )}
           <Select
-            value={field.value ?? ""}
+            value={field.value != null ? String(field.value) : ""}
             onValueChange={field.onChange}
             disabled={disabled || options.length === 0}
           >
